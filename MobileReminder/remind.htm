@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+        <head>
+                <title>Mobile Reminder</title>
+                <meta charset="utf-8" />
+                <meta name="viewport" content="width=device-width, initial-scale=1"> 
+                <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css" />
+                <script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+                <script src="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>
+				<style>
+					div.ui-field-contain div.ui-slider-switch {
+						width: 7em;
+					}
+
+					#message-content-div {
+						background-color: red;
+						font-size: 200%;
+						font-weight:bold;
+						margin: 10px 10px;
+						padding: 100px 50px;
+					}
+				</style>
+        </head>
+        <body>
+                <div data-role="page" id="input-page" data-theme="e">
+                        <div data-role="header">
+                                Mobile Reminder
+                        </div>
+
+                        <div data-role="content">
+                                <form name="myform">
+                                        <input type="text" id="message" placeholder="Enter reminder" spellcheck="true" />
+
+										<br />
+
+										<div data-role="fieldcontain">
+											<label for="timer-slider">Enter time:</label>
+											<input type="range" name="timer-slider" id="timer-slider" value="5" min="1" max="180" data-theme="a" data-track-theme="b" />
+										</div>
+
+										<br />
+
+										<div data-role="fieldcontain">
+											<label for="time-units">Units:</label>
+											<div class="containing-element">
+												<select name="time-units" id="time-units" data-role="slider">
+													<option value="minutes">Minutes</option>
+													<option value="seconds">Seconds</option>
+												</select>
+											</div>
+										</div>
+
+										<br />
+										<br />
+
+                                        <a href="#wait-page" data-role="button" data-transition="flip" data-mini="false" data-inline="false" onclick="javascript: remind();">Start</a>
+                                </form>
+
+                        </div>
+
+                                <script>
+                                        function timerForRemind(message) {
+                                                var supportVibrate = "vibrate" in navigator;
+                                                // alert("support for vibrate = " + supportVibrate);
+                                                navigator.vibrate([2000, 1000, 2000, 1000, 2000]);
+                                                // alert("Reminder: " + message);
+												window.location.href="#done-page";
+                                        }
+
+
+                                        function remind() {
+                                                // alert("Remind");
+                                                // alert("input message = " + inputMessage);
+
+                                                var inputMessage = document.forms["myform"].elements[0].value;
+												document.getElementById("message-content-div").innerHTML = inputMessage;
+                                                var inputTimer   = document.forms["myform"].elements[1].value;
+												// alert("input time = " + inputTimer);
+												var inputTimerInt = parseInt(inputTimer);
+                                                var inputTimerUnits   = document.forms["myform"].elements[2].value;
+												// alert("time units = " + inputTimerUnits);
+												var timeUnitMultiplier = 0;
+												if(inputTimerUnits === "minutes") {
+													timeUnitMultiplier = 60;
+												} else if(inputTimerUnits === "seconds") {
+													timeUnitMultiplier = 1;
+												} else {
+													alert("ERROR - unknown time unit error");
+												}
+
+												// alert("timeUnitMultiplier = " + timeUnitMultiplier);
+												var seconds = inputTimerInt * timeUnitMultiplier; 
+
+                                                setTimeout(function() {
+                                                        timerForRemind(inputMessage);
+                                                }, 1000 * seconds);
+                                        }
+                                </script>
+                </div>
+
+
+				<div data-role="page" id="wait-page" data-theme="e">
+					<div data-role="header">
+						Started
+					</div>
+
+					<div data-role="content">
+						<br />
+						<br />
+
+						<h2>Waiting ...</h2>
+
+						<br />
+						<br />
+						<br />
+						<br />
+
+						<a href="#done-page" data-role="button" >Skip</a>
+					</div>
+				</div>
+
+
+				<div data-role="page" id="done-page" data-theme="e">
+					<div data-role="header">
+						Done
+					</div>
+
+					<div data-role="content">
+						<h2>Countdown complete!</h2>
+
+						<br />
+
+						<div id="message-content-div">
+							Message:
+
+							<br />
+
+							<span id="message-content-span">
+							</span>
+						</div>
+					</div>
+				</div>
+        </body>
+</html>
+
