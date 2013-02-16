@@ -24,6 +24,16 @@
 				var listsFromSession = sessionStorage.getItem("list_names");
 				alert("lists from session = " + listsFromSession);
 
+				showCurrentLists(listsFromSession);
+
+			});
+
+
+			function showCurrentLists(listsFromSession) {
+				// remove old list if exists
+				$('ul#list-names').children("li").remove();
+
+				// show current list
 				if(listsFromSession) {
 					var rawLists = listsFromSession.split(",");
 					var lists = rawLists.filter(function(v) { return(v);});
@@ -35,10 +45,11 @@
 						$('ul#list-names').append(listItem);
 					}
 				}
+			}
 
-			});
 
-			function updateList(currentNames, newListName) {
+
+			function updateLists(currentNames, newListName) {
 				var updatedList = "";
 
 				if(currentNames) {
@@ -49,11 +60,13 @@
 
 				sessionStorage.setItem("list_names", updatedList);
 				var listNamesInSession = sessionStorage.getItem("list_names");
-				// alert("updateList - list names in session after update = " + listNamesInSession);
+				alert("updateLists - list names in session after update = " + listNamesInSession);
+
 
 				// add to front page
-				var listItem = "<li><a href='#page-view-checklist'>" + newListName + "</a></li>";
-				$('ul#list-names').append(listItem);
+				/// var listItem = "<li><a href='#page-view-checklist'>" + newListName + "</a></li>";
+				/// $('ul#list-names').append(listItem);
+				showCurrentLists(listNamesInSession);
 				$('ul#list-names').listview('refresh');
 				// $('ul#list-names').append(listItem).parent().trigger('create');
 
@@ -61,16 +74,20 @@
 			}
 
 
+
 			function addNewList() {
-				// alert("addNewList ...");
+				alert("addNewList ...");
 				var newListName = $("#new-list-name").val();
+				alert("new list name = " + newListName);
 				$("#new-list-name").val("");   // clear values so not still sitting there next time user goes to page
-				alert("List name = " + newListName);
+				// alert("List name = " + newListName);
 				var listNamesInSession = sessionStorage.getItem("list_names");
-				// alert("addNewList - list names in session before update = " + listNamesInSession);
-				updateList(listNamesInSession, newListName);
+				//alert("addNewList - list names in session before update = " + listNamesInSession);
+				updateLists(listNamesInSession, newListName);
 				// alert("session storage latest list_names = " + sessionStorage.getItem("list_names"));
 			}
+
+
 
 			function setCheckListName(checkListName) {
 				alert("setting checklist-name-id to = " + checkListName);
@@ -78,26 +95,36 @@
 			}
 
 
+
 			function deleteCheckList() {
+				alert("Deleting checklist");
 				var checkListName = $("#checklist-name-id").val();
-				a// lert("deleteChecklist - Deleting checklist = " + checkListName);
+				alert("deleteChecklist - Deleting checklist = " + checkListName);
 				var listsFromSession = sessionStorage.getItem("list_names");
-				// alert("deleteChecklist - listFromSession = " + listsFromSession);
+				alert("deleteChecklist - listFromSession = " + listsFromSession);
 				var rawLists = listsFromSession.split(",");
-				// alert("deleteChecklist - rawLists = " + rawLists);
+				alert("deleteChecklist - rawLists = " + rawLists);
 				var listAsString = null;
+
 				if(rawLists.length === 1) {
 					listAsString = "";
 				} else {
 					var arrayIndex = rawLists.indexOf(checkListName);
-					// alert("deleteChecklist - arrayIndex = " + arrayIndex);
-					var slicedList = rawLists.slice(arrayIndex, arrayIndex + 1);   // slice out one unwanted value
-					// alert("deleteChecklist - list after slice = " + slicedList);
-					listAsString = slicedList.join(",");
+					alert("deleteChecklist - arrayIndex = " + arrayIndex);
+					if(arrayIndex === -1) {
+						alert("Not found: value=|" + checkListName + "|");
+					} else {
+						/// var slicedList = rawLists.slice(arrayIndex, 1);   // slice out one unwanted value
+						rawLists.splice(arrayIndex, 1);   // slice out one unwanted value
+						listAsString = rawLists.join(",");
+						alert("deleteChecklist - list as string = " + listAsString);
+						sessionStorage.setItem("list_names", listAsString);
+					}
 				}
-				alert("deleteChecklist - list as string = " + listAsString);
-				sessionStorage.setItem("list_names", listAsString);
 				// $('ul#list-names').listview('refresh');   $('ul#list-names').trigger('refresh');
+
+				showCurrentLists(listAsString);
+				$('ul#list-names').listview('refresh');
 			}
 
 		</script>
