@@ -1,0 +1,176 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<title>Mobile Checklists</title>
+
+		<link rel="stylesheet" href="themes/blue-and-orange.css" />
+		<link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile.structure-1.2.0.min.css" />
+		<!-- <link rel="stylesheet" href="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.css" /> -->
+
+		<script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
+		<script>
+
+			$(document).ready(function() {
+				// alert("ready!");
+				$("#add-new-list-link-button").click(function(e) {
+					// e.preventDefault();	
+					addNewList();
+				});
+
+				var listsFromSession = sessionStorage.getItem("list_names");
+				alert("lists from session = " + listsFromSession);
+
+				if(listsFromSession) {
+					var rawLists = listsFromSession.split(",");
+					var lists = rawLists.filter(function(v) { return(v);});
+
+					for(var i in lists) {
+						// alert(lists[i]);
+						var javascriptAttribute = "onclick=\"javascript:setCheckListName('" + lists[i] + "');\" ";
+						var listItem = "<li><a href='#page-view-checklist' " + javascriptAttribute+ ">" + lists[i] + "</a></li>";
+						$('ul#list-names').append(listItem);
+					}
+				}
+
+			});
+
+			function updateList(currentNames, newListName) {
+				var updatedList = "";
+
+				if(currentNames) {
+					updatedList += (currentNames+ "," + newListName);
+				} else {
+					updatedList = newListName;
+				}
+
+				sessionStorage.setItem("list_names", updatedList);
+				var listNamesInSession = sessionStorage.getItem("list_names");
+				// alert("updateList - list names in session after update = " + listNamesInSession);
+
+				// add to front page
+				var listItem = "<li><a href='#page-view-checklist'>" + newListName + "</a></li>";
+				$('ul#list-names').append(listItem);
+				$('ul#list-names').listview('refresh');
+				// $('ul#list-names').append(listItem).parent().trigger('create');
+
+				return updatedList;
+			}
+
+
+			function addNewList() {
+				// alert("addNewList ...");
+				var newListName = $("#new-list-name").val();
+				$("#new-list-name").val("");   // clear values so not still sitting there next time user goes to page
+				alert("List name = " + newListName);
+				var listNamesInSession = sessionStorage.getItem("list_names");
+				// alert("addNewList - list names in session before update = " + listNamesInSession);
+				updateList(listNamesInSession, newListName);
+				// alert("session storage latest list_names = " + sessionStorage.getItem("list_names"));
+			}
+
+			function setCheckListName(checkListName) {
+				alert("setting checklist-name-id to = " + checkListName);
+				$("#checklist-name-id").val(checkListName);
+			}
+
+
+			function deleteCheckList() {
+				var checkListName = $("#checklist-name-id").val();
+				a// lert("deleteChecklist - Deleting checklist = " + checkListName);
+				var listsFromSession = sessionStorage.getItem("list_names");
+				// alert("deleteChecklist - listFromSession = " + listsFromSession);
+				var rawLists = listsFromSession.split(",");
+				// alert("deleteChecklist - rawLists = " + rawLists);
+				var listAsString = null;
+				if(rawLists.length === 1) {
+					listAsString = "";
+				} else {
+					var arrayIndex = rawLists.indexOf(checkListName);
+					// alert("deleteChecklist - arrayIndex = " + arrayIndex);
+					var slicedList = rawLists.slice(arrayIndex, arrayIndex + 1);   // slice out one unwanted value
+					// alert("deleteChecklist - list after slice = " + slicedList);
+					listAsString = slicedList.join(",");
+				}
+				alert("deleteChecklist - list as string = " + listAsString);
+				sessionStorage.setItem("list_names", listAsString);
+				// $('ul#list-names').listview('refresh');   $('ul#list-names').trigger('refresh');
+			}
+
+		</script>
+		<script src="http://code.jquery.com/mobile/1.2.0/jquery.mobile-1.2.0.min.js"></script>   <!-- place this below custom javascript so latest items will be styled right -->
+		<style media="only screen and (max-width: 480px)">
+			* {	
+				color:yellow;
+			}
+		</style>
+	</head>
+
+
+	<body>
+		<div>
+			<h1>Mobile Checklists</h1>
+
+			<!-- Page showing overview of lists -->
+			<div data-role="page" id="page1" data-theme="a">
+				<div data-role="header">
+					Your Checklists
+				</div>
+
+				<br />
+
+				<div data-role="content">
+					<ul id="list-names" data-role="listview" data-inset="true" data-filter="true">
+						<li id="first-item"><a href="#page-view-checklist" onclick="javascript:setCheckListName('grocery');">Grocery Store</a></li>
+					</ul>
+
+					<br />
+
+					<a href="#page-add-list" data-role="button" data-transition="flow" data-icon="plus" data-iconpos="right" data-mini="false" data-inline="true">Add</a>
+				</div><!-- /content -->
+			</div><!-- /page -->
+
+			<br />
+
+			<!-- Page to add new list -->
+			<div data-role="page" id="page-add-list" data-theme="a">
+				<div data-role="header">
+					<label>Enter New List Name</label>
+				</div>
+				<div data-role="content">
+					<input type="text" id="new-list-name" />
+					<br />
+					<a id="add-new-list-link-button" href="#page1" data-role="button" data-transition="flow" data-icon="plus" data-iconpos="top" data-mini="false" data-inline="false" >Add</a>
+				</div>
+			</div>
+
+
+			<div data-role="page" id="page-view-checklist" data-theme="a">
+				<div data-role="header">
+					<h1>Mobile Checklists</h1>
+				</div>
+
+				<div data-role="content">
+					<p>Checklist:</p>
+					<input type="hidden" id="checklist-name-id" value="nothing" />
+
+					<ul data-role="listview" data-inset="true" data-filter="false">
+						<li data-icon="minus"><a href="#">Bread</a></li>
+						<li data-icon="minus"><a href="#">Milk</a></li>
+						<li data-icon="minus"><a href="#">Soda</a></li>
+					</ul>
+
+					<br />
+
+					<a href="#page1" data-role="button" data-transition="flow" data-icon="home" data-iconpos="bottom" data-inline="false" data-mini="true">Back</a>
+					<a href="#page1" data-role="button" data-transition="flow" data-icon="home" data-iconpos="bottom" data-inline="false" data-mini="true" onclick="javascript:deleteCheckList();" >Delete this list</a>
+				</div><!-- /content -->
+			</div><!-- /page -->
+		</div>
+	</body>
+</html>
+
+
