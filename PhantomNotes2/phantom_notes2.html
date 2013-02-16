@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+ <head>
+    <meta charset="utf-8" />
+
+  <!-- jQuery project by Tim Force    -->
+  <!-- triad type color scheme based on c3ff68: #A63122(red), #72A622(light green), #365C5C(dark green), #C8FF90(bluish green) -->
+  <!-- colors for priorities:  #F6FF68(yellow), #FF4F00(international orange) -->
+
+
+  <title>Phantom Notes 2</title>
+
+  <link href='http://fonts.googleapis.com/css?family=PT+Sans' rel='stylesheet' type='text/css'>
+
+  <style type="text/css">
+
+       html {
+               font-size: 100%;
+       }
+
+       body {
+               font-family: 'PT Sans', sans-serif;
+               letter-spacing: 1px;
+               line-height: 1.5;
+       }
+
+
+       div#content {
+          border: 4px black solid; 
+          margin: 1px auto; 
+          padding: 5px 50px;
+          position: relative;
+          width:600px; 
+       }
+
+
+       .urgent-priority{
+               background-color: #CC0000;   /* more red, less maroon */
+               color: #C3FF68;
+       }
+
+
+       .high-priority{
+               background-color: #FF4F00; 
+               color: #365C5C;
+       }
+
+
+       .normal-priority {
+               background-color: #C3FF90;
+               color: #A63122;
+       }
+
+
+       .note-action {
+               cursor: pointer; 
+               font-size: 70%; 
+               font-style: italic; 
+               text-decoration: underline;
+       }
+
+
+       div#ghost-image-section {
+         position: absolute;
+         top: 55px;
+         right: 15px;
+       }
+
+
+       div#current-notes-section {
+               background-color: #C8FF90;
+               border-color: #365c5c;
+               border-style: solid;
+               border-width: 5px;
+               color: #A63122;
+               letter-spacing: 3px;
+               margin: 5px;
+               outline-color: #125050;
+               outline-style: solid;
+               outline-width: 3px;
+               padding: 2px 20px;
+               word-spacing: 3px;
+       }
+
+
+       div#content-title {
+               /* background-color: #125050; */
+               background-color: #365C5C;
+               font-style: italic;
+               margin: 20px 2em;
+               /* outline: 1px #125050 solid; */
+               border-left: 10px #A63122 solid;
+               padding-left: 0.4em;
+               padding-right: 0.4em;
+               text-align: right;
+               word-spacing: 1.5em;
+       }
+ 
+       div#status-section {
+               background-color: #C8FF90;
+               color:#C3ff68;
+               font-size: 0.9em;
+               font-style: italic;
+               height: 40px;
+               margin-bottom: 0px;
+               margin-top: 20px;
+       }
+
+       .red-bg {
+           background-color: #C3FF68;
+       }
+
+
+       body>div#status-to-open-section a {
+           text-decoration: none;
+       }
+
+       body>div#status-to-open-section {
+           background-color: #9cbf56;
+           border-top: 1px solid black;
+           border-bottom: 1px solid black;
+           border-left: 1px solid black;
+           border-right: 1px solid black;
+           position: fixed;
+           bottom: 0;
+           left: 0px;
+           padding: 1px 2px;
+       }
+
+       div.status-areas a:visited {
+         color: black;
+         text-decoration: none;
+       }
+
+       body>div#status-section {
+           border-top: 1px solid black;
+           border-bottom: 1px solid black;
+           border-left: 3px solid black;
+           border-right: 3px solid black;
+           position: fixed;
+           bottom: 0;
+           width: 400px;
+           padding: 1px 5px;
+           visibility: visible;   /* values: 'visible' or 'hidden' */
+           /* margin-left: auto; margin-right: auto; margin-top: 0px; padding-top: 0px; */
+       }
+
+       div#status-to-close-section a {
+           text-decoration:none;
+       }
+
+       input#new-note-submit {
+         background-color: #DEFFAC;
+         color: #125050;
+         padding: 7px 100px;
+       }
+
+       input#undo-last-note-button {
+         background-color: #72A622;
+         border-width: 0px;
+         color: #C8FF90;
+         display: block;
+         font-size: 70%;
+         font-weight: bold;
+         margin-bottom: 5px;
+         margin-left:auto;
+         margin-right: auto;
+         padding: 1px 0;
+         text-align: center;
+         width: 200px;
+       }
+
+
+       ul#new-note-list {
+         list-style-position: inside; 
+       }
+
+       ul#new-note-list li {
+         margin-bottom: 1px;
+         padding-bottom: 2px;
+         padding-left: 1em;
+         padding-top: 3px;
+       }
+
+  </style>
+
+
+  <script type="text/javascript" src="http://code.jquery.com/jquery-1.6.1.js"></script>
+  <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.8.13/jquery-ui.js"></script>
+
+
+  <script type="text/javascript">
+       $(document).ready(function() {
+
+		
+               function setStatus(statusMessage) {
+                       // alert("Status");
+                       $("div > span#status-message").html(statusMessage);
+               }
+
+
+               $("div#status-section").draggable();
+
+
+               $("input#undo-last-note-button").hover(function() {
+                   setStatus("Click 'Undo' button to recover deleted note");
+               }, function() {
+                   setStatus(getEmptyStatusValue());
+               });
+
+
+               $("a[id*=close]").click(function(event) {
+                   $("div#status-section").animate( {
+                       "left": "-500px"
+                   }, { duration: "500"});
+                   // $("div#status-section").delay(1000).css("visibility", "hidden");
+                   // $("div#status-to-open-section").css("visibility", "visible");
+                   event.stopPropagation();
+               });
+
+
+               $("div#status-to-open-section").click(function() {
+                   $(this).css("visibility", "hidden");
+                   $("div#status-section").css("visibility", "visible");
+                   $("div#status-section").animate( {
+                       "left": "50px"
+                   }, { duration: "500"});
+                   setStatus("Status");
+               }); 
+
+
+               $("input[type=button]#new-note-submit").click(function() {
+                       // $("current-notes-section").hide('slow');
+                       // $("current-notes-section").show('slow');
+
+                       // var noteText = $("#new-note-text").val();
+                       var noteText = $("[name=new_note_text]").val();   // test select by attribute name only
+                       $("#new-note-text").val("");
+                       // alert('Hello World - text = ' + noteText);
+
+                       // var lastLi = $("ul").find("li").end();
+                       var ulEl = $("ul#new-note-list"); //.find("li:last:parent");
+                       // alert('last element li - text = ' + ulEl);
+                       ulEl.append("<li><span id='note-content'>" + noteText + "</span></li>");
+                       var liLast = $("ul#new-note-list").find("li:last");
+
+                       callbackPrepareNote(liLast);
+               });
+
+
+               // use jquery ui to allow elements to be re-arranged
+               function makeNoteDraggable(el) {
+                       el.draggable( {
+                           containment: 'div#current-notes-section',
+                           cursor: 'move',
+                       });
+                       el.find("span").first().css("cursor", "move");
+                       // el.find("span#remove-me").css("cursor", "crosshair");
+               }
+
+
+               $("input[type=button]#undo-last-note-button").click(function() {
+                   /* remove from deleted list */
+                   var deletedNoteEl = $("ul#deleted-list").find("li:last");
+                   var deletedText = deletedNoteEl.text().trim();
+                   // alert("Deleted Text = " + deletedText); 
+                   deletedNoteEl.remove();
+
+                   /* add to normal list */
+                   if(deletedText) {
+                       // make sure there was at least one deleted item before proceeding
+                       var newNoteEl = $("ul#new-note-list");
+                       newNoteEl.append("<li><span id='note-content'>" + deletedText + "</span></li>");
+                       var liLast = $("ul#new-note-list").find("li:last");
+                       callbackPrepareNote(liLast);
+                   } else {
+                       setStatus("No more deleted messages found");
+                   }
+
+                   /* Do not show undo button if no notes in deleted list */
+                   if( $('ul#deleted-list li').size() > 0 ) {
+                       $('div#undo-note-section').css("visibility", "visible");
+                   } else {
+                       $('div#undo-note-section').css("visibility", "hidden");
+                   }
+               });
+
+
+
+               // give notes common behaviors
+               function callbackPrepareNote(el) {
+                   makeNoteDraggable(el);
+
+                   el.append("&nbsp; &nbsp;");   // add space between text and links
+
+                   // delete
+                   el.append(" (<span id='remove-me' class='note-action'>remove</span>) ");
+                   var removeMeSpan = el.find("span#remove-me");
+                   addNoteDeleteFunctionality(removeMeSpan);
+
+                   // prioritize
+                   el.append(" (<span id='flag-me' class='note-action' >flag</span>)");
+                   var flagMeSpan = el.find("span#flag-me");
+                   addNoteFlagFunctionality(flagMeSpan);
+               } 
+
+
+               // make initial note draggable
+               var initNote = $("li[initial*=starter]");
+               callbackPrepareNote(initNote);
+           
+
+
+               function getEmptyStatusValue() { 
+                   return("&nbsp; ")
+               }
+
+
+
+               // change background/foreground colors on note if flagged or unflagged (prioritizing)
+               function addNoteFlagFunctionality(el) {
+                   $(el).click(function() {
+                       var parentEl = $(el).parent();  // also try .parent().parent();
+
+                       if(parentEl.hasClass("urgent-priority")) {
+                           parentEl.removeClass("urgent-priority");
+                           parentEl.removeClass("high-priority");
+                           parentEl.addClass("normal-priority");
+                       } else if(parentEl.hasClass("high-priority")) {
+                           parentEl.removeClass("normal-priority");
+                           parentEl.removeClass("high-priority");
+                           parentEl.addClass("urgent-priority");
+                       } else {
+                           parentEl.removeClass("normal-priority");
+                           parentEl.removeClass("urgent-priority");
+                           parentEl.addClass("high-priority");
+                       }
+                   });
+               }
+
+
+
+               function addNoteDeleteFunctionality(el) {
+                   $(el).click(function() {
+                       $(el).parent().fadeOut('slow');
+                       setStatus(getEmptyStatusValue);
+                       var valEl = $(el).parent().find("span#note-content").text().trim();
+                       // alert("Deleting note: " + valEl);
+                       $('ul#deleted-list').append("<li class='deleted-note'>" + valEl + "</li>");
+                       $('div#undo-note-section').css("visibility", "visible");
+                   });
+               } 
+
+
+               /* add visual indicator for delete and action */
+               function addHoverDeleteFunction(el) {
+                       $(el).hover(function() {
+                               // alert("new li hover");
+                               // $(this).addClass("red-bg"); setStatus("Click to remove"); $(this).css("text-decoration", "line-through"); $(this).css("cursor", "crosshair");
+                       },function() {
+                               $(this).removeClass("red-bg");
+                               setStatus(getEmptyStatusValue());
+                               $(this).css("text-decoration", "none");
+                               $(this).css("cursor", "default");
+                       });
+
+                       $(el).click(function() {
+                               // alert("Click!");
+                               // $(el).hide('slow');
+                               var valEl = $(el).text().trim();
+                               // alert("val El = |" + valEl + "|");
+                               $(el).fadeOut('slow'); //.remove();
+                               setStatus(getEmptyStatusValue);
+                               $('ul#deleted-list').append("<li class='deleted-note'>" + valEl + "</li>");
+                               /* We have at least one deleted note, so show Undo button */
+                               $('div#undo-note-section').css("visibility", "visible");
+                       });
+               }
+       });
+
+   </script>
+ </head>
+
+ <body bgcolor="#C3FF68">
+       <div id="content">
+          <br />
+               <div id="content-title">
+                   <span style="color: #C8FF90; font-size: 90%;">
+                       <h2>Phantom Notes</h2>
+						<span style="font-size: 0.7rem; word-spacing: 1em;">   <!-- rem, not em !!! -->
+							Here today, gone tomorrow
+						</span>
+                   </span>
+               </div>
+
+
+               <div id="ghost-image-section">
+                   <img src="phantom_op25.png" />
+               </div>
+
+
+               <br />
+               <br />
+               <br />
+
+               <div id="new-note-section" style="color: #125050; text-align:center;">
+                       Enter new note:
+                       <br />
+                       <br />
+                       <input id="new-note-text" name="new_note_text" type="text" size="40" />
+                       <br />
+                       <br />
+                       <input type="button" id="new-note-submit" value="Add" />
+               </div>
+
+               <br />
+               <br />
+
+               <hr size="2" width="70%" />
+
+               <br />
+
+               <div id="current-notes-section">
+                       <!-- color: #851e1e;  -->
+                       <div id="current-notes-title" style="font-style: italic; text-align:center">
+                               <h4>Notes</h4>
+                       </div>
+
+                       <ul id="new-note-list">
+                               <li initial="starter copy">
+                                       <span id="note-content">Test note!</span>
+                               </li>
+                       </ul>
+
+                       <div id="undo-note-section" style="text-align:center; margin: 5px; visibility: hidden;">
+                           <input type="button" id="undo-last-note-button" value="Undo" />
+                       </div>
+               </div>
+
+               <br />
+
+               <div id="deleted-note-section" style="text-align:center; display: none;">
+                   <ul id="deleted-list">
+                   </ul>
+               </div>
+
+       </div>
+
+
+       <div id="status-to-open-section" class="status-areas" style="visibility: hidden">
+           <span style="font-weight: bold">    
+               <a href="#">+</a>
+           </span>
+       </div>
+
+
+       <div id="status-section" class="status-areas">
+                        
+           <span id="status-message">Enter new note and click 'Add' for it to appear</span>
+
+           <div id="status-to-close-section" style="float: right; color: black">
+               <span style="font-weight: bold">
+                   <a href="#" id="close-status-link">X</a>
+               </span>
+           </div>
+       <div>
+
+    </body>
+ </html>
+
+
