@@ -25,8 +25,22 @@
 				alert("lists from session = " + listsFromSession);
 
 				showCurrentLists(listsFromSession);
-
+				initListDetails(listsFromSession);
 			});
+
+
+
+			function initListDetails(listsFromSession) {
+				var listDetails = {};
+				var listNames = listsFromSession.split(",");
+
+				for(var i = 0; i < listNames.length; i++) {
+					var currentListDetails = sessionStorage.getItem(listNames[i]);
+					alert("Current list details for: " + listNames[i] + " = " + currentListDetails);
+					sessionStorage.setItem(listNames[i], "Vegetables,Trash Bags,Diapers");
+				}
+			}
+
 
 
 			function showCurrentLists(listsFromSession) {
@@ -89,9 +103,39 @@
 
 
 
+			function removeListItem(listName, listItem) {
+				alert("Removing list item: " + listItem + "   from list: " + listName);
+				var listDetailsString = sessionStorage.getItem(listName);
+				var listDetails = listDetailsString.split(",");
+				var newListDetails = [];
+				for(var i=0; i < listDetails.length; i++) {
+					var currentListItem = listDetails[i];
+					if(listItem === currentListItem) {
+						// do nothing
+					} else {
+						newListDetails.push(currentListItem);
+					}
+				}
+				alert("New List Details = " + newListDetails);
+				sessionStorage.setItem(listName, newListDetails.join(","));
+				// $("ul#list-details").listview("refresh");
+			}
+
+
+
 			function setCheckListName(checkListName) {
 				alert("setting checklist-name-id to = " + checkListName);
 				$("#checklist-name-id").val(checkListName);
+				var listDetailsString = sessionStorage.getItem(checkListName);
+				var listDetails = listDetailsString.split(",");
+				alert("setCheckListName - listDetails = " + listDetails);
+				$("ul#list-details").children("li").remove();
+				for(var i=0; i < listDetails.length; i++) {
+					var javaScriptOnClick = " onclick=\"javascript:removeListItem('" + checkListName + "', '" + listDetails[i] + "');\"";
+					var listItem = "<li data-icon='minus'><a href='#page1' " + javaScriptOnClick + ">" + listDetails[i]  + "</a></li>";
+					$("ul#list-details").append(listItem);
+				}
+				$("ul#list-details").listview("refresh");
 			}
 
 
@@ -184,7 +228,7 @@
 					<p>Checklist:</p>
 					<input type="hidden" id="checklist-name-id" value="nothing" />
 
-					<ul data-role="listview" data-inset="true" data-filter="false">
+					<ul id="list-details" data-role="listview" data-inset="true" data-filter="false">
 						<li data-icon="minus"><a href="#">Bread</a></li>
 						<li data-icon="minus"><a href="#">Milk</a></li>
 						<li data-icon="minus"><a href="#">Soda</a></li>
