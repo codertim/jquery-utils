@@ -166,6 +166,7 @@
 				"use strict";
 				$("ul#list-details").children("li").remove();
 				if(isDebug2) { alert("clearAndRegeneratListItems"); }
+				if(isDebug2) { alert("clearAndRegenerateItems - list details length= " + listDetails.length); }
 				for(var i=0; i < listDetails.length; i++) {
 					var javaScriptOnClick = " onclick=\"javascript:removeListItem('" + checkListName + "', '" + listDetails[i] + "');\"";
 					var listItem = "<li data-icon='minus'><a href='#page-view-checklist' " + javaScriptOnClick + ">" + listDetails[i]  + "</a></li>";
@@ -183,7 +184,11 @@
 				$("#checklist-name-id").val(checkListName);
 				$("#checklist-name-label").text(checkListName);   // can use 'html' if contains markup
 				var listDetailsString = sessionStorage.getItem(checkListName);
-				var listDetails = listDetailsString.split(",");
+				if(isDebug2) { alert("setCheckListName - listDetailsString = |" + listDetailsString + "|"); }
+				var listDetails = new Array();
+				if(listDetailsString) {
+					listDetails = listDetailsString.split(",");
+				}	
 				if(isDebug2) { alert("setCheckListName - listDetails = " + listDetails); }
 				clearAndRegenerateListItems(listDetails, checkListName);
 			}
