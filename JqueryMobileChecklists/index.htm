@@ -14,6 +14,9 @@
 		<script src="http://code.jquery.com/jquery-1.8.2.min.js"></script>
 		<script>
 
+			var isDebug1 = false;
+			var isDebug2 = false;
+
 			$(document).ready(function() {
 				// alert("ready!");
 				$("#add-new-list-link-button").click(function(e) {
@@ -22,7 +25,7 @@
 				});
 
 				var listsFromSession = sessionStorage.getItem("list_names");
-				alert("lists from session = " + listsFromSession);
+				if(isDebug1) { alert("lists from session = " + listsFromSession); }
 
 				showCurrentLists(listsFromSession);
 				initListDetails(listsFromSession);
@@ -31,14 +34,15 @@
 
 
 			function initListDetails(listsFromSession) {
+				"use strict";
 				var listDetails = {};
 				if(listsFromSession != null) {
 					var listNames = listsFromSession.split(",");
 
 					for(var i = 0; i < listNames.length; i++) {
 						var currentListDetails = sessionStorage.getItem(listNames[i]);
-						alert("Current list details for: " + listNames[i] + " = " + currentListDetails);
-						sessionStorage.setItem(listNames[i], "Vegetables,Trash Bags,Diapers");
+						if(isDebug1) { alert("Current list details from session for: " + listNames[i] + " = " + currentListDetails); }
+						sessionStorage.setItem(listNames[i], "Wash Car");
 					}
 				}
 			}
@@ -46,6 +50,7 @@
 
 
 			function showCurrentLists(listsFromSession) {
+				"use strict";
 				// remove old list if exists
 				$('ul#list-names').children("li").remove();
 
@@ -57,7 +62,7 @@
 					for(var i in lists) {
 						// alert(lists[i]);
 						var javascriptAttribute = "onclick=\"javascript:setCheckListName('" + lists[i] + "');\" ";
-						var listItem = "<li><a href='#page-view-checklist' " + javascriptAttribute+ ">" + lists[i] + "</a></li>";
+						var listItem = "<li><a href='#page-view-checklist' " + javascriptAttribute + ">" + lists[i] + "</a></li>";
 						$('ul#list-names').append(listItem);
 					}
 				}
@@ -66,6 +71,7 @@
 
 
 			function updateLists(currentNames, newListName) {
+				"use strict";
 				var updatedList = "";
 
 				if(currentNames) {
@@ -76,7 +82,7 @@
 
 				sessionStorage.setItem("list_names", updatedList);
 				var listNamesInSession = sessionStorage.getItem("list_names");
-				alert("updateLists - list names in session after update = " + listNamesInSession);
+				if(isDebug1) { alert("updateLists - list names in session after update = " + listNamesInSession); }
 
 
 				// add to front page
@@ -92,9 +98,10 @@
 
 
 			function addNewList() {
-				alert("addNewList ...");
+				"use strict";
+				if(isDebug1) { alert("addNewList ..."); }
 				var newListName = $("#new-list-name").val();
-				alert("new list name = " + newListName);
+				if(isDebug2) { alert("new list name = " + newListName); }
 				$("#new-list-name").val("");   // clear values so not still sitting there next time user goes to page
 				// alert("List name = " + newListName);
 				var listNamesInSession = sessionStorage.getItem("list_names");
@@ -105,11 +112,38 @@
 
 
 
+			function attachNewItemToCheckList() {
+				"use strict";
+				if(isDebug1) { alert("Starting attachNewItemToCheckList"); }
+			    var newItemText = $("#new-item-text").val();
+				if(isDebug2) {alert("new item text = " + newItemText); }
+				var checkListName = $("#checklist-name-id").val();
+				if(isDebug2) { alert("check list name = " + checkListName); }
+				var listDetailsString = sessionStorage.getItem(checkListName);
+				if(isDebug2) { alert("current session items = |" + listDetailsString + "|"); }
+				// alert("current session items.length = |" + listDetailsString.length + "|");
+				var newListDetailsString = "";
+				if(listDetailsString) {
+					newListDetailsString = [listDetailsString, newItemText].join(",");
+				} else {
+					// typically empty string, "", if empty
+					newListDetailsString = newItemText;
+				}
+				if(isDebug2) { alert("new list details string for session = " + newListDetailsString); }
+				sessionStorage.setItem(checkListName, newListDetailsString);
+				clearAndRegenerateListItems(newListDetailsString.split(","), checkListName);
+			    $("#new-item-text").val("");
+			}
+
+
+
 			function removeListItem(listName, listItem) {
-				alert("Removing list item: " + listItem + "   from list: " + listName);
+				"use strict";
+				if(isDebug1) { alert("Removing list item: " + listItem + "   from list: " + listName); }
 				var listDetailsString = sessionStorage.getItem(listName);
 				var listDetails = listDetailsString.split(",");
 				var newListDetails = [];
+
 				for(var i=0; i < listDetails.length; i++) {
 					var currentListItem = listDetails[i];
 					if(listItem === currentListItem) {
@@ -118,52 +152,77 @@
 						newListDetails.push(currentListItem);
 					}
 				}
-				alert("New List Details = " + newListDetails);
+
+				if(isDebug2) { alert("New List Details = " + newListDetails); }
 				sessionStorage.setItem(listName, newListDetails.join(","));
-				// $("ul#list-details").listview("refresh");
+				//$("ul#list-details").listview("refresh");     does not work - need to delete from html list first or regenerate html list before calling this  
+				clearAndRegenerateListItems(newListDetails, listName);
 			}
 
 
 
-			function setCheckListName(checkListName) {
-				alert("setting checklist-name-id to = " + checkListName);
-				$("#checklist-name-id").val(checkListName);
-				var listDetailsString = sessionStorage.getItem(checkListName);
-				var listDetails = listDetailsString.split(",");
-				alert("setCheckListName - listDetails = " + listDetails);
+			// refresh list by deleting all current items and appending the latest updated list of items
+			function clearAndRegenerateListItems(listDetails, checkListName) {
+				"use strict";
 				$("ul#list-details").children("li").remove();
+				if(isDebug2) { alert("clearAndRegeneratListItems"); }
 				for(var i=0; i < listDetails.length; i++) {
 					var javaScriptOnClick = " onclick=\"javascript:removeListItem('" + checkListName + "', '" + listDetails[i] + "');\"";
-					var listItem = "<li data-icon='minus'><a href='#page1' " + javaScriptOnClick + ">" + listDetails[i]  + "</a></li>";
+					var listItem = "<li data-icon='minus'><a href='#page-view-checklist' " + javaScriptOnClick + ">" + listDetails[i]  + "</a></li>";
 					$("ul#list-details").append(listItem);
 				}
+
 				$("ul#list-details").listview("refresh");
 			}
 
 
 
-			function deleteCheckList() {
-				alert("Deleting checklist");
+			function setCheckListName(checkListName) {
+				"use strict";
+				if(isDebug1) {alert("setting checklist-name-id to = " + checkListName); }
+				$("#checklist-name-id").val(checkListName);
+				$("#checklist-name-label").text(checkListName);   // can use 'html' if contains markup
+				var listDetailsString = sessionStorage.getItem(checkListName);
+				var listDetails = listDetailsString.split(",");
+				if(isDebug2) { alert("setCheckListName - listDetails = " + listDetails); }
+				clearAndRegenerateListItems(listDetails, checkListName);
+			}
+
+
+
+			function addToCheckList() {
+				"use strict";
+				if(isDebug1) { alert("Starting addToCheckList ..."); }
 				var checkListName = $("#checklist-name-id").val();
-				alert("deleteChecklist - Deleting checklist = " + checkListName);
+				if(isDebug2) { alert("addToCheckList - check list name = " + checkListName); }
+			}
+
+
+
+			function deleteCheckList() {
+				"use strict";
+				if(isDebug1) { alert("Deleting checklist"); }
+				var checkListName = $("#checklist-name-id").val();
+				if(isDebug2) { alert("deleteChecklist - Deleting checklist = " + checkListName); }
 				var listsFromSession = sessionStorage.getItem("list_names");
-				alert("deleteChecklist - listFromSession = " + listsFromSession);
+				if(isDebug2) { alert("deleteChecklist - listFromSession = " + listsFromSession); }
 				var rawLists = listsFromSession.split(",");
-				alert("deleteChecklist - rawLists = " + rawLists);
+				if(isDebug2) { alert("deleteChecklist - rawLists = " + rawLists); }
 				var listAsString = null;
 
 				if(rawLists.length === 1) {
 					listAsString = "";
 				} else {
 					var arrayIndex = rawLists.indexOf(checkListName);
-					alert("deleteChecklist - arrayIndex = " + arrayIndex);
+					if(isDebug2) { alert("deleteChecklist - arrayIndex = " + arrayIndex); }
+
 					if(arrayIndex === -1) {
-						alert("Not found: value=|" + checkListName + "|");
+						if(isDebug2) { alert("Not found: value=|" + checkListName + "|"); }
 					} else {
 						/// var slicedList = rawLists.slice(arrayIndex, 1);   // slice out one unwanted value
 						rawLists.splice(arrayIndex, 1);   // slice out one unwanted value
 						listAsString = rawLists.join(",");
-						alert("deleteChecklist - list as string = " + listAsString);
+						if(isDebug2) { alert("deleteChecklist - list as string = " + listAsString); }
 						sessionStorage.setItem("list_names", listAsString);
 					}
 				}
@@ -227,21 +286,37 @@
 				</div>
 
 				<div data-role="content">
-					<p>Checklist:</p>
+					<p>Checklist:  <label id="checklist-name-label"></label></p>
 					<input type="hidden" id="checklist-name-id" value="nothing" />
 
 					<ul id="list-details" data-role="listview" data-inset="true" data-filter="false">
-						<li data-icon="minus"><a href="#">Bread</a></li>
-						<li data-icon="minus"><a href="#">Milk</a></li>
-						<li data-icon="minus"><a href="#">Soda</a></li>
+						<li data-icon="minus"><a href="#">Check Messages</a></li>
 					</ul>
 
 					<br />
+					<br />
 
+					<a href="#page-add-item" data-role="button" data-transition="flow" data-icon="add" data-iconpos="bottom" data-inline="false" data-mini="true" onclick="javascript:addToCheckList();">Add</a>
 					<a href="#page1" data-role="button" data-transition="flow" data-icon="back" data-iconpos="bottom" data-inline="false" data-mini="true">Back</a>
 					<a href="#page1" data-role="button" data-transition="flow" data-icon="delete" data-iconpos="bottom" data-inline="false" data-mini="true" onclick="javascript:deleteCheckList();" >Delete this list</a>
 				</div><!-- /content -->
 			</div><!-- /page -->
+
+
+			<!-- Page to add new list -->
+			<div data-role="page" id="page-add-item" data-theme="a">
+				<div data-role="header">
+					<label>New List Item</label>
+				</div>
+
+				<div data-role="content">
+					<input type="text" id="new-item-text" placeholder="Enter new list item" spellcheck="true" />
+					<br />
+					<a id="add-new-item-link-button" href="#page-view-checklist" data-role="button" data-transition="flow" data-icon="plus" data-iconpos="top" data-mini="false" data-inline="false" onclick="javascript:attachNewItemToCheckList();">Add</a>
+					<a href="#page-view-checklist" data-role="button" data-transition="flow" data-icon="back" data-iconpos="bottom" data-inline="false" data-mini="true">Cancel</a>
+				</div>
+			</div> <!-- page -->
+
 		</div>
 	</body>
 </html>
