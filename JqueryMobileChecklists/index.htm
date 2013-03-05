@@ -24,7 +24,7 @@
 					addNewList();
 				});
 
-				var listsFromSession = sessionStorage.getItem("list_names");
+				var listsFromSession = localStorage.getItem("list_names");
 				if(isDebug1) { alert("lists from session = " + listsFromSession); }
 
 				showCurrentLists(listsFromSession);
@@ -40,9 +40,9 @@
 					var listNames = listsFromSession.split(",");
 
 					for(var i = 0; i < listNames.length; i++) {
-						var currentListDetails = sessionStorage.getItem(listNames[i]);
+						var currentListDetails = localStorage.getItem(listNames[i]);
 						if(isDebug1) { alert("Current list details from session for: " + listNames[i] + " = " + currentListDetails); }
-						sessionStorage.setItem(listNames[i], "Wash Car");
+						localStorage.setItem(listNames[i], "Wash Car");
 					}
 				}
 			}
@@ -80,8 +80,8 @@
 					updatedList = newListName;
 				}
 
-				sessionStorage.setItem("list_names", updatedList);
-				var listNamesInSession = sessionStorage.getItem("list_names");
+				localStorage.setItem("list_names", updatedList);
+				var listNamesInSession = localStorage.getItem("list_names");
 				if(isDebug1) { alert("updateLists - list names in session after update = " + listNamesInSession); }
 
 
@@ -104,10 +104,10 @@
 				if(isDebug2) { alert("new list name = " + newListName); }
 				$("#new-list-name").val("");   // clear values so not still sitting there next time user goes to page
 				// alert("List name = " + newListName);
-				var listNamesInSession = sessionStorage.getItem("list_names");
+				var listNamesInSession = localStorage.getItem("list_names");
 				//alert("addNewList - list names in session before update = " + listNamesInSession);
 				updateLists(listNamesInSession, newListName);
-				// alert("session storage latest list_names = " + sessionStorage.getItem("list_names"));
+				// alert("session storage latest list_names = " + localStorage.getItem("list_names"));
 			}
 
 
@@ -119,7 +119,7 @@
 				if(isDebug2) {alert("new item text = " + newItemText); }
 				var checkListName = $("#checklist-name-id").val();
 				if(isDebug2) { alert("check list name = " + checkListName); }
-				var listDetailsString = sessionStorage.getItem(checkListName);
+				var listDetailsString = localStorage.getItem(checkListName);
 				if(isDebug2) { alert("current session items = |" + listDetailsString + "|"); }
 				// alert("current session items.length = |" + listDetailsString.length + "|");
 				var newListDetailsString = "";
@@ -130,7 +130,7 @@
 					newListDetailsString = newItemText;
 				}
 				if(isDebug2) { alert("new list details string for session = " + newListDetailsString); }
-				sessionStorage.setItem(checkListName, newListDetailsString);
+				localStorage.setItem(checkListName, newListDetailsString);
 				clearAndRegenerateListItems(newListDetailsString.split(","), checkListName);
 			    $("#new-item-text").val("");
 			}
@@ -140,7 +140,7 @@
 			function removeListItem(listName, listItem) {
 				"use strict";
 				if(isDebug1) { alert("Removing list item: " + listItem + "   from list: " + listName); }
-				var listDetailsString = sessionStorage.getItem(listName);
+				var listDetailsString = localStorage.getItem(listName);
 				var listDetails = listDetailsString.split(",");
 				var newListDetails = [];
 
@@ -154,7 +154,7 @@
 				}
 
 				if(isDebug2) { alert("New List Details = " + newListDetails); }
-				sessionStorage.setItem(listName, newListDetails.join(","));
+				localStorage.setItem(listName, newListDetails.join(","));
 				//$("ul#list-details").listview("refresh");     does not work - need to delete from html list first or regenerate html list before calling this  
 				clearAndRegenerateListItems(newListDetails, listName);
 			}
@@ -183,7 +183,7 @@
 				if(isDebug1) {alert("setting checklist-name-id to = " + checkListName); }
 				$("#checklist-name-id").val(checkListName);
 				$("#checklist-name-label").text(checkListName);   // can use 'html' if contains markup
-				var listDetailsString = sessionStorage.getItem(checkListName);
+				var listDetailsString = localStorage.getItem(checkListName);
 				if(isDebug2) { alert("setCheckListName - listDetailsString = |" + listDetailsString + "|"); }
 				var listDetails = new Array();
 				if(listDetailsString) {
@@ -209,7 +209,7 @@
 				if(isDebug1) { alert("Deleting checklist"); }
 				var checkListName = $("#checklist-name-id").val();
 				if(isDebug2) { alert("deleteChecklist - Deleting checklist = " + checkListName); }
-				var listsFromSession = sessionStorage.getItem("list_names");
+				var listsFromSession = localStorage.getItem("list_names");
 				if(isDebug2) { alert("deleteChecklist - listFromSession = " + listsFromSession); }
 				var rawLists = listsFromSession.split(",");
 				if(isDebug2) { alert("deleteChecklist - rawLists = " + rawLists); }
@@ -228,7 +228,7 @@
 						rawLists.splice(arrayIndex, 1);   // slice out one unwanted value
 						listAsString = rawLists.join(",");
 						if(isDebug2) { alert("deleteChecklist - list as string = " + listAsString); }
-						sessionStorage.setItem("list_names", listAsString);
+						localStorage.setItem("list_names", listAsString);
 					}
 				}
 				// $('ul#list-names').listview('refresh');   $('ul#list-names').trigger('refresh');
